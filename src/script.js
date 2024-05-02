@@ -4,6 +4,10 @@ import GUI from 'lil-gui'
 import { GLTFLoader } from 'three/examples/jsm/Addons.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { RGBELoader } from 'three/examples/jsm/Addons.js'
+import { EXRLoader } from 'three/examples/jsm/Addons.js'
+import { TextureLoader } from 'three'
+import { GroundedSkybox } from 'three/examples/jsm/Addons.js'
+
 
 
 // Loaders
@@ -13,8 +17,13 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
 const rgbeLoader = new RGBELoader()
-
+const exrLoader = new EXRLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
+const textureLoader = new THREE.TextureLoader()
+const groundedSkybox = new THREE.groundedSkybox
+
+console.log(groundedSkybox)
+
 
 
 
@@ -64,15 +73,49 @@ gui.add(global, 'envMapIntensity').min(0).max(10).step(.001).onChange(updateMate
 
 
 // HDRI equirectangular map
+// const environmentMap = rgbeLoader.load(
+//     '/environmentMaps/blender-2k.hdr',
+//     (environment)=>{
+//         environment.mapping = THREE.EquirectangularReflectionMapping
+//         // scene.background ˝= environment
+//         scene.environment = environment
+//         console.log(environment)
+//     }
+// )
+
+// HDRI EXR equirectangular map
+// const environmentMap = exrLoader.load(
+//     '/environmentMaps/nvidiaCanvas-4k.exr',
+//     (environment)=>{
+//         environment.mapping = THREE.EquirectangularReflectionMapping
+//         scene.background = environment
+//         scene.environment = environment
+//     }
+// )
+
+// LDR equirectangular map 
+// const environmentMap = textureLoader.load(
+//         '/environmentMaps/blockadesLabsSkybox/digital_painting_neon_city_night_orange_lights_.jpg',
+//         (environment)=>{
+//             environment.mapping = THREE.EquirectangularReflectionMapping
+//             scene.background = environment
+//             scene.environment = environment
+//         }
+//     )
+// environmentMap.colorSpace = THREE.SRGBColorSpace
+// global.envMapIntensity = 4
+
+// skybox ground projection
 const environmentMap = rgbeLoader.load(
-    '/environmentMaps/blender-2k.hdr',
+    '/environmentMaps/2/2k.hdr',
     (environment)=>{
         environment.mapping = THREE.EquirectangularReflectionMapping
-        scene.background = environment
+        // scene.background ˝= environment
         scene.environment = environment
         console.log(environment)
     }
 )
+
 /**
  * Torus Knot
  */
@@ -82,7 +125,7 @@ const torusKnot = new THREE.Mesh(
 )
 torusKnot.position.x = - 6
 torusKnot.position.y = 4
-scene.add(torusKnot)
+// scene.add(torusKnot)
 
 // Models
 let model = null
@@ -97,6 +140,7 @@ gltfLoader.load(
         updateMaterialss()
     }
 )
+
 
 /**
  * Sizes
