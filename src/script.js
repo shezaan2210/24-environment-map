@@ -6,7 +6,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { RGBELoader } from 'three/examples/jsm/Addons.js'
 import { EXRLoader } from 'three/examples/jsm/Addons.js'
 import { TextureLoader } from 'three'
-import { GroundedSkybox } from 'three/examples/jsm/Addons.js'
+import { GroundProjectedSkybox } from 'three/examples/jsm/Addons.js'
 
 
 
@@ -20,9 +20,9 @@ const rgbeLoader = new RGBELoader()
 const exrLoader = new EXRLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
 const textureLoader = new THREE.TextureLoader()
-const groundedSkybox = new THREE.groundedSkybox
+// const groundedSkybox = new GroundProjectedSkybox()
 
-console.log(groundedSkybox)
+// console.log(groundedSkybox)
 
 
 
@@ -106,15 +106,36 @@ gui.add(global, 'envMapIntensity').min(0).max(10).step(.001).onChange(updateMate
 // global.envMapIntensity = 4
 
 // skybox ground projection
-const environmentMap = rgbeLoader.load(
-    '/environmentMaps/2/2k.hdr',
-    (environment)=>{
-        environment.mapping = THREE.EquirectangularReflectionMapping
-        // scene.background ˝= environment
-        scene.environment = environment
-        console.log(environment)
-    }
-)
+// const environmentMap = rgbeLoader.load(
+//     '/environmentMaps/2/2k.hdr',
+//     (environment)=>{
+//         environment.mapping = THREE.EquirectangularReflectionMapping
+//         //  scene.background = environment
+//         scene.environment = environment
+//         // console.log(environment)
+//         const skybox = new GroundProjectedSkybox(environment)
+//         skybox.radius = 120
+//         skybox.height = 11
+//         skybox.scale.setScalar(50)
+//         scene.add(skybox)
+
+//         gui.add(skybox, 'radius', 1, 200, .1).name('skyboxRadius')
+//         gui.add(skybox, 'height', 1, 200, .1).name('skyboxHeight')
+//     }
+// )
+
+// Real time environment map
+// base environment map
+const environmentMap = textureLoader.load(
+        '/environmentMaps/blockadesLabsSkybox/interior_views_cozy_wood_cabin_with_cauldron_and_p.jpg',
+        (environment)=>{
+            environment.mapping = THREE.EquirectangularReflectionMapping
+            environmentMap.colorSpace = THREE.SRGBColorSpace
+            scene.background = environment
+            // scene.environment = environment
+        }
+    )
+
 
 /**
  * Torus Knot
@@ -126,6 +147,28 @@ const torusKnot = new THREE.Mesh(
 torusKnot.position.x = - 6
 torusKnot.position.y = 4
 // scene.add(torusKnot)
+
+// Holy donut
+const holyDonut = new THREE.Mesh(
+    new THREE.TorusGeometry(6, .3),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(10, 4, 2)})
+)
+holyDonut.position.y = 3.5
+scene.add(holyDonut)
+holyDonut.layers.enable(1)
+
+// Cube Render Target
+const cubeRender = new THREE.WebGLCubeRenderTarget(
+    256,
+    {
+        type: THREE.HalfFloatType
+    }
+)
+scene.environment = cubeRender.texture
+
+// Cube Camera
+const cubeCamera = new THREE.CubeCamera(.1, 100, cubeRender)
+cubeCamera.layers.set(1)
 
 // Models
 let model = null
@@ -195,13 +238,15 @@ const tick = () =>
 {
     // Time
     const elapsedTime = clock.getElapsedTime()
-    if (model === null) {
-        
+    // Model update
+    if (model) {
+        // model.rotation.z += .05
     }
-    else{
-
-        model.rotation.z += .05
-    }
+// Update real time environemnt map
+if (holyDonut) {
+    holyDonut.rotation.x = Math.sin(elapsedTime) * 2
+    cubeCamera.update(renderer, scene)
+}
 
     // Update controls
     controls.update()
